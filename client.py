@@ -3,6 +3,7 @@ import socket
 import os
 from dotenv import load_dotenv
 import json
+
 load_dotenv()
 HOST = os.getenv('LOCALHOST')
 PORT = os.getenv('PORT')
@@ -14,9 +15,12 @@ class Client:
 
     def connect(self):   
         self.tcp.connect((HOST, int(PORT)))
+
+    def create_msg(self):
+        return {}
     
-    def send_msg(self, payload):
-        self.tcp.send(str.encode(json.dumps(payload)))
+    def send_msg(self):
+        self.tcp.send(str.encode(json.dumps(self.create_msg())))
 
 if __name__ == "__main__":
     client = Client()
@@ -29,9 +33,3 @@ if __name__ == "__main__":
         else:
             trash["locked"] = True
     client.send_msg(trash)
-        
-    # print('Para sair use CTRL+X\n')
-    # while msg != '\x18':
-    #     obj = {"porcentage": msg }
-    #     client.send_msg()
-    #     msg = input()
