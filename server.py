@@ -9,12 +9,12 @@ PORT = os.getenv('PORT')
 class Server:
 
     def __init__(self) -> None:
-        self.tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #AF_INET IPV4, SOCK_STREAM socket type for tcp
+        self.tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #AF_INET socket type for IPV4, SOCK_STREAM socket type for tcp
 
     def run(self):
         try:
             with self.tcp as tcp:
-                tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
                 tcp.bind((HOST, int(PORT)))
                 tcp.listen()
                 print(f"Servidor Online, escutando a porta {PORT}")
@@ -28,7 +28,7 @@ class Server:
                     print('Finalizando conexao do cliente')
                     connection.close()
         except KeyboardInterrupt:
-            print('interrupted!')
+            print('Finalizando servidor!')
    
 if __name__ == "__main__":
     server = Server()
