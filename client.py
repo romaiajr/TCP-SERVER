@@ -1,4 +1,3 @@
-from pickle import FALSE
 import socket
 import os
 from dotenv import load_dotenv
