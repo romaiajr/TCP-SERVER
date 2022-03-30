@@ -3,6 +3,7 @@ import socket
 import os
 from dotenv import load_dotenv
 import json
+from uuid import getnode as get_mac
 
 load_dotenv()
 HOST = os.getenv('LOCALHOST')
@@ -12,6 +13,7 @@ class Client:
     
     def __init__(self) -> None:
         self.tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.mac = get_mac()
 
     def connect(self):   
         self.tcp.connect((HOST, int(PORT)))

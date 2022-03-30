@@ -9,7 +9,7 @@ class Lixeira(Client):
         self.isLocked = False
 
     def create_msg(self):
-        return {"filled_percentage": self.filled_percentage(), "isLocked": self.isLocked}
+        return {"mac": self.mac, "filled_percentage": self.filled_percentage(), "isLocked": self.isLocked}
 
     def fill(self, value: int):
         if self.isLocked:
@@ -18,8 +18,10 @@ class Lixeira(Client):
             self.filled += value
             if self.filled == self.capacity:
                 self.lock()
-            self.send_msg()
-    
+        else:
+            self.lock()
+        self.send_msg()
+        
     def empty(self):
         self.filled = 0
         self.send_msg()
@@ -39,6 +41,11 @@ if __name__ == "__main__":
     lixeira = Lixeira(500)
     lixeira.connect()
     print("Conectado ao servidor")
-    while not lixeira.isLocked:
+    while True:
+        if lixeira.isLocked:
+            break
         time.sleep(1)
         lixeira.fill(randint(30,50))
+        
+        
+        
