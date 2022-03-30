@@ -17,6 +17,9 @@ class Client:
     def connect(self):   
         self.tcp.connect((HOST, int(PORT)))
 
+    def disconnect(self):
+        self.tcp.close()
+
     def create_msg(self):
         return {}
     
