@@ -12,22 +12,21 @@ class Client:
     
     def __init__(self) -> None:
         self.mac = get_mac()
-        print("started")
 
     def __enter__(self):   
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket.connect((HOST, int(PORT)))
-        print("enter")
+        print("Conectado ao servidor")
 
-    def __exit__(self):
-        print(self.recv_msg())
+    def __exit__(self,exc_type, exc_value, exc_traceback):
         self.client_socket.close()
-        print("exit")
-
+        print("Conexão finalizada")
+        
     def create_msg(self):
         return {}
     
     def send_msg(self):
+        print("Enviado mensagem: {}".format(self.create_msg()))
         self.client_socket.send(str.encode(json.dumps(self.create_msg())))
     
     def recv_msg(self):

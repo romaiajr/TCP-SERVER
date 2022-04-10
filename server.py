@@ -21,7 +21,7 @@ class Server:
             reply = "r" + msg.decode('utf-8') + "b"
             print(client, msg)
             connection.sendall(str.encode(reply))
-        print('Finalizando conexao do cliente')
+        print('Finalizando conexao do cliente: {}'.format(client))
         connection.close()
         
     def run(self):
@@ -43,7 +43,6 @@ class Server:
         res_dict = json.loads(msg.decode('utf-8'))
         if res_dict['client'] == 'lixeira':
             self.update_lixeira(res_dict)
-        print(self.lixeiras)
 
     def update_lixeira(self, msg):
         mac = msg['mac']

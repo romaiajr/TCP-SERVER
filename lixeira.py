@@ -39,7 +39,6 @@ if __name__ == "__main__":
     from random import randint
     import time
     lixeira = Lixeira(500)
-    print("Conectado ao servidor")
     while True:
         with lixeira:
             if lixeira.isLocked:
