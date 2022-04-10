@@ -8,8 +8,12 @@ class Lixeira(Client):
         self.filled = 0
         self.isLocked = False
 
-    def create_msg(self):
-        return {"client": "lixeira", "mac": self.mac, "filled_percentage": self.filled_percentage(), "isLocked": self.isLocked}
+    def create_msg(self, **kwargs):
+        msg = {"client": "lixeira", "mac": self.mac, "type": kwargs.get("type")}
+        if kwargs.get("type") == "fill":
+            msg['filled_percentage'] =  self.filled_percentage()
+            msg['isLocked'] = self.isLocked
+        return msg
 
     def fill(self, value: int):
         if self.isLocked:
@@ -20,11 +24,11 @@ class Lixeira(Client):
                 self.lock()
         else:
             self.lock()
-        self.send_msg()
+        self.send_msg(type="fill")
         
     def empty(self):
         self.filled = 0
-        self.send_msg()
+        self.send_msg(type="empty")
     
     def lock(self):
         self.isLocked = True
@@ -40,6 +44,7 @@ if __name__ == "__main__":
     import time
     lixeira = Lixeira(500)
     with lixeira:
+        lixeira.send_msg(type="connect")
         while True:
             if lixeira.isLocked:
                 pass
