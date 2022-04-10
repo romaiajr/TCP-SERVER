@@ -39,12 +39,10 @@ if __name__ == "__main__":
     from random import randint
     import time
     lixeira = Lixeira(500)
-    while True:
-        with lixeira:
+    with lixeira:
+        while True:
             if lixeira.isLocked:
-                break
+                pass
             time.sleep(1)
             lixeira.fill(randint(30,50))
-        
-        
-        
+            print(lixeira.recv_msg())

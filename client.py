@@ -31,3 +31,6 @@ class Client:
     
     def recv_msg(self):
         return self.client_socket.recv(1024)
+    
+    def decode_msg(self, msg):
+        return json.loads(msg.decode('utf-8'))
