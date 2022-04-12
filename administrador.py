@@ -1,5 +1,8 @@
 from client import Client
+from message import Message
 
+#REVIEW a lógica do administrador seguindo o padrão da lixeira
+#TODO fazer o caminhão primeiro parece ser mais acertivo e deixar o ADM por último
 class Administrador(Client):
 
     def __init__(self) -> None:
@@ -13,7 +16,7 @@ class Administrador(Client):
             try:
                 msg = self.recv_msg()
                 if msg:
-                    print(msg)
+                    print("Mensagem recebida: {}".format(msg))
                     self.handle_msg(msg)
             except Exception as e:
                 print(e)
@@ -24,7 +27,7 @@ class Administrador(Client):
             msg['to_collect'] = self.to_collect
         return msg
 
-    def handle_msg(self, msg):
+    def handle_msg(self, msg:Message):
         self.lixeiras = self.decode_msg(msg)
         for key in self.lixeiras:
             lixeira = self.lixeiras[key]

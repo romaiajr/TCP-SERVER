@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 import json
 from uuid import getnode as get_mac
+from message import Message
 
 load_dotenv()
 HOST = os.getenv('LOCALHOST')
@@ -22,11 +23,12 @@ class Client:
         self.client_socket.close()
         print("Conexão finalizada")
         
-    def create_msg(self, **kwargs):
-        return {}
+    def create_msg(self, origin: str, destination:str, event:str, *data:dict):
+        msg = Message(origin, destination, event, data)
+        return msg.get_msg()
     
-    def send_msg(self, **kwargs):
-        msg = self.create_msg(**kwargs)
+    def send_msg(self, origin: str, destination:str, event:str, *data:dict):
+        msg = self.create_msg(origin, destination, event, data)
         print("Enviado mensagem: {}".format(msg))
         self.client_socket.send(str.encode(json.dumps(msg)))
     
