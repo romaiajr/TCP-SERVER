@@ -8,7 +8,10 @@ class Lixeira(Client):
         self.capacity = capacity
         self.filled = 0
         self.is_locked = False
-        self.send_msg(origin="lixeira",destination="server",event="register")
+    
+    def __enter__(self):
+        super().__enter__()
+        self.send_msg(origin="trash",destination="server",mac=self.mac, event="register")
     
     #REVIEW a forma de iniciar o client a ponto dele receber msg e ser preenchido
     #REVIEW talvez coroutine para verificar em loop sem atrapalhar o fluxo do código
@@ -17,8 +20,9 @@ class Lixeira(Client):
         try:
             msg = self.recv_msg()
             if msg:
-                print("Mensagem recebida: {}".format(msg))
-                self.handle_msg(msg)
+                msg_decoded = self.decode_msg(msg)
+                print("Mensagem recebida: {}".format(msg_decoded))
+                self.handle_msg(msg_decoded)
         except Exception as e:
             print(e)
     
@@ -28,11 +32,11 @@ class Lixeira(Client):
         if execute_event:
             execute_event()
             self.send_msg(
-                origin="lixeira",destination="server",event="update", 
+                origin="trash",destination="server",mac=self.mac, event="update", 
                 data={'filled_percentage': self.filled_percentage(), "is_locked": self.is_locked })
 
     def fill(self, value: int):
-        if self.isLocked:
+        if self.is_locked:
             return
         elif value <= self.capacity - self.filled:
             self.filled += value
@@ -41,17 +45,18 @@ class Lixeira(Client):
         else:
             self.lock()
         self.send_msg(
-            origin="lixeira",destination="server",event="update", 
+            origin="trash",destination="server",mac=self.mac, event="update", 
             data={'filled_percentage': self.filled_percentage(), "is_locked": self.is_locked })
         
     def empty(self):
         self.filled = 0
+        self.unlock()
         
     def lock(self):
-        self.isLocked = True
+        self.is_locked = True
         
     def unlock(self):
-        self.isLocked = False
+        self.is_locked = False
 
     def filled_percentage(self) -> float:
         return (self.filled * 100)/self.capacity
@@ -64,5 +69,5 @@ if __name__ == "__main__":
         while True:
             lixeira.await_for_msg()
             time.sleep(1)
-            if not lixeira.isLocked:
+            if not lixeira.is_locked:
                 lixeira.fill(randint(30,70))

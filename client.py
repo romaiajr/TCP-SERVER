@@ -23,12 +23,12 @@ class Client:
         self.client_socket.close()
         print("Conexão finalizada")
         
-    def create_msg(self, origin: str, destination:str, event:str, *data:dict):
-        msg = Message(origin, destination, event, data)
+    def create_msg(self, origin: str, destination:str, mac:str, event:str, data:dict=None):
+        msg = Message(origin, destination, mac, event, data)
         return msg.get_msg()
     
-    def send_msg(self, origin: str, destination:str, event:str, *data:dict):
-        msg = self.create_msg(origin, destination, event, data)
+    def send_msg(self, origin: str, destination:str, mac:str, event:str, data:dict=None):
+        msg = self.create_msg(origin, destination, mac, event, data)
         print("Enviado mensagem: {}".format(msg))
         self.client_socket.send(str.encode(json.dumps(msg)))
     
