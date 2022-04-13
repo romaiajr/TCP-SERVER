@@ -17,7 +17,6 @@ class Server:
         self.trash_handler = TrashHandler(5)
         self.adm_handler = AdmHandler(1)
         self.truck_handler = TruckHandler(1)
-        self.truck = None
         self.client_handler = {"trash": self.handle_lixeira_msg, "adm": self.handle_adm_msg, "truck": self.handle_truck_msg}
 
     def threaded_client(self, connection, client):
@@ -44,6 +43,7 @@ class Server:
             print("Finalizando servidor")
             self.server_socket.close()
 
+    #TODO alterar a lógica dos handlers
     def handle_lixeira_msg(self, connection, msg):
         self.trash_handler.handle_msg(connection, msg)
         if msg['event'] == "update":

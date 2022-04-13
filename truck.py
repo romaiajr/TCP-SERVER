@@ -37,6 +37,9 @@ class Truck(Client):
             self.list_to_collect.append(data.get('mac'))
         print(self.list_to_collect)
         time.sleep(1)
+        self.collect_trash()
+        
+    def collect_trash(self):
         for trash in self.list_to_collect:
             self.send_msg(
                 origin="truck",destination="trash",mac=self.mac, event= "collect_trash", 

@@ -13,9 +13,6 @@ class Lixeira(Client):
         super().__enter__()
         self.send_msg(origin="trash",destination="server",mac=self.mac, event="register")
     
-    #REVIEW a forma de iniciar o client a ponto dele receber msg e ser preenchido
-    #REVIEW talvez coroutine para verificar em loop sem atrapalhar o fluxo do código
-    #TODO rever as mensagens exibidas nos prints
     def await_for_msg(self):
         try:
             msg = self.recv_msg()
