@@ -14,11 +14,14 @@ class Lixeira(Client):
         self.send_msg(origin="trash",destination="server",mac=self.mac, event="register")
     
     def await_for_msg(self):
-        msg = self.recv_msg()
-        if msg:
-            msg_decoded = self.decode_msg(msg)
-            print("Mensagem recebida: {}".format(msg_decoded))
-            self.handle_msg(msg_decoded)
+        try:
+            msg = self.recv_msg()
+            if msg:
+                msg_decoded = self.decode_msg(msg)
+                print("Mensagem recebida: {}".format(msg_decoded))
+                self.handle_msg(msg_decoded)
+        except Exception as e:
+            print(e)
     
     def handle_msg(self, msg: Message):
         event = {"lock_trash": self.lock, "unlock_trash": self.unlock, "collect_trash": self.empty }
@@ -61,7 +64,7 @@ if __name__ == "__main__":
     lixeira = Lixeira(500)
     with lixeira:
         while True:
-            lixeira.await_for_msg()
             time.sleep(1)
             if not lixeira.is_locked:
                 lixeira.fill(randint(30,70))
+            lixeira.await_for_msg()

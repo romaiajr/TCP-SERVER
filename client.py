@@ -1,7 +1,6 @@
 import socket
 import os
 import selectors
-import types
 import json
 from uuid import getnode as get_mac
 from message import Message
@@ -18,8 +17,8 @@ class Client:
 
     def __enter__(self):   
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client_socket.setblocking(False)
         self.client_socket.connect_ex((HOST, int(PORT)))
+        self.client_socket.setblocking(False)
         events = selectors.EVENT_READ | selectors.EVENT_WRITE
         self.sel.register(self.client_socket, events)
         print("Conectado ao servidor")
@@ -41,4 +40,5 @@ class Client:
         return self.client_socket.recv(1024)
     
     def decode_msg(self, msg):
-        return json.loads(msg.decode('utf-8'))
+        print(msg)
+        return json.loads(msg)

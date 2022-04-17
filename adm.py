@@ -29,11 +29,8 @@ class Administrador(Client):
             execute_event(msg['data'])
     
     def update_list_of_trash(self, data):
-        if data.get('list_of_trash'):
-            list_of_trash = data.get('list_of_trash')
-        elif data.get('mac'):
-            list_of_trash.append(data.get('mac'))
-        print(list_of_trash)
+        self.list_of_trash = data.get("list_of_trash")
+        print(self.list_of_trash)
         time.sleep(1)
     
     def change_list_of_trash(self):
@@ -63,10 +60,10 @@ class Administrador(Client):
 if __name__ == "__main__":
     import time
     adm = Administrador()
-    adm.simulate_list_of_trash({"carro": "Roberto", "moto": "Daniel", "bicicleta": "Samuel"})
-    adm.change_list_of_trash()
-    adm.lock_trash()
-    # with truck:
-    #     while True:
-    #         truck.await_for_msg()
-    #         time.sleep(1)
+    # adm.simulate_list_of_trash({"carro": "Roberto", "moto": "Daniel", "bicicleta": "Samuel"})
+    # adm.change_list_of_trash()
+    # adm.lock_trash()
+    with adm:
+        while True:
+            adm.await_for_msg()
+            time.sleep(1)

@@ -1,70 +1,72 @@
 import json
+import sys
 import socket
+import selectors
+import types
 import os
 from dotenv import load_dotenv
-from _thread import *
-from adm_handler import AdmHandler
-from lixeira_handler import TrashHandler
-from truck_handler import TruckHandler
+from message_handler import MessageHandler
+
 load_dotenv()
 HOST = os.getenv('LOCALHOST')
 PORT = os.getenv('PORT')
-
 class Server:
 
     def __init__(self) -> None:
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #AF_INET socket type for IPV4, SOCK_STREAM socket type for server_socket
-        self.trash_handler = TrashHandler(5)
-        self.adm_handler = AdmHandler(1)
-        self.truck_handler = TruckHandler(1)
-        self.client_handler = {"trash": self.handle_lixeira_msg, "adm": self.handle_adm_msg, "truck": self.handle_truck_msg}
-
-    def threaded_client(self, connection, client):
-        while True:
-            msg = connection.recv(2048)
-            if msg: 
-                print(client, msg)
-                res_dict = self.decode_msg(msg)
-                handle_msg = self.client_handler[res_dict['origin']]
-                handle_msg(connection, res_dict)
-        
+        self.sel = selectors.DefaultSelector()
+        self.handler = MessageHandler(1,5,1)
+    
     def run(self):
-        try:
-            with self.server_socket as server_socket:
-                server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
-                server_socket.bind((HOST, int(PORT)))
-                server_socket.listen()
-                print(f"Servidor Online, escutando a porta {PORT}")
+        with self.server_socket as server_socket:
+            server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
+            server_socket.bind((HOST, int(PORT)))
+            server_socket.listen()
+            server_socket.setblocking(False) #configure the socket in non-blocking mode
+            self.sel.register(server_socket, selectors.EVENT_READ, data=None)
+            print(f"Servidor Online, escutando a porta {PORT}")
+            try:
                 while True:
-                    connection, client = server_socket.accept()
-                    print(f"Conexão estabelecida com o cliente: {client}")
-                    start_new_thread(self.threaded_client,(connection, client))
-        except KeyboardInterrupt:
-            print("Finalizando servidor")
-            self.server_socket.close()
-
-    #TODO alterar a lógica dos handlers
-    def handle_lixeira_msg(self, connection, msg):
-        self.trash_handler.handle_msg(connection, msg)
-        if msg['event'] == "update":
-            if float(msg['data']['filled_percentage']) > 80:
-                if self.truck_handler.is_connected():
-                    self.truck_handler.update_list_to_collect(msg['mac'])
+                    events = self.sel.select(timeout=None)
+                    for key, mask in events:
+                        if key.data is None:
+                            self.accept_wrapper(key.fileobj)
+                        else:
+                            self.service_connection(key, mask)
+            except KeyboardInterrupt:
+                print("Caught keyboard interrupt, exiting")
+            finally:
+                self.sel.close()
     
-    def handle_truck_msg(self, connection, msg):
-        if msg['event'] == 'collect_trash':
-            self.trash_handler.handle_msg(connection, msg)
-        else: 
-            self.truck_handler.handle_msg(connection, msg)
+    def accept_wrapper(self,sock):
+        conn, addr = sock.accept()  # Should be ready to read
+        print(f"Conexão aceita com o client: {addr}")
+        conn.setblocking(False)
+        data = types.SimpleNamespace(addr=addr, inb=b"", outb=b"")
+        events = selectors.EVENT_READ | selectors.EVENT_WRITE
+        self.sel.register(conn, events, data=data)
     
-    def handle_adm_msg(self, connection, msg):
-        self.adm_handler.handle_msg(connection, msg)
-        self.adm_handler.send_msg((self.trash_handler.get_lixeiras()))
-        # if self.caminhao:
-        #     self.caminhao.send(self.encode_msg(msg["to_collect"]))
+    def service_connection(self, key, mask):
+        sock = key.fileobj
+        data = key.data
+        if mask & selectors.EVENT_READ:
+            recv_data = sock.recv(1024)  # Should be ready to read
+            if recv_data:
+                data.outb += recv_data
+                print("Mensagem recebida: {}".format(recv_data))
+                self.handler.handle_msg(self.decode_msg(recv_data), sock)
+            else:
+                print(f"Encerrando conexão com o cliente: {data.addr}")
+                self.sel.unregister(sock)
+                sock.close()
+        # if mask & selectors.EVENT_WRITE:
+        #     if data.outb:
+        #         print(f"Enviando mensagem {data.outb!r} to {data.addr}")
+        #         sent = sock.send(data.outb)  # Should be ready to write
+        #         data.outb = data.outb[sent:]
     
     def decode_msg(self, msg):
-        return json.loads(msg.decode('utf-8'))
+        return json.loads(msg)
 
 if __name__ == "__main__":
     server = Server()
