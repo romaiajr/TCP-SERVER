@@ -43,7 +43,7 @@ class Truck(Client):
         for trash in self.list_to_collect:
             self.send_msg(
                 origin="truck",destination="trash",mac=self.mac, event= "collect_trash", 
-                data={"mac_to_collect": trash})
+                data={"mac_to_collect": int(trash)})
             time.sleep(1)
         self.list_to_collect = []
 

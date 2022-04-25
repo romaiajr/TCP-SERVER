@@ -45,16 +45,14 @@ class Administrador(Client):
             print(self.list_of_trash)
 
     def lock_trash(self):
-        print("Lista de lixos: ",self.list_of_trash,self.list_of_trash.keys())
         if self.list_of_trash:
-            # print("Lista de lixos preenchidos: ",self.list_of_trash,self.list_of_trash.keys())
             self.show_list_of_trash()
             trash_to_be_locked = input("Qual lixeira deseja travar?\n")
             macs = {id+1:value for id,value in enumerate(self.list_of_trash.keys())}
-            print(macs)
             try:
                 trash = macs.get(int(trash_to_be_locked))
-                self.send_msg(origin="adm",destination="server",mac=self.mac, event="lock_trash",data=trash)
+                if trash:
+                    self.send_msg(origin="adm",destination="server",mac=self.mac, event="lock_trash",data={"mac_to_lock": trash})
             except Exception as e:
                 print(e)
                 self.lock_trash()
@@ -86,7 +84,6 @@ if __name__ == "__main__":
             adm.await_for_msg()
             time.sleep(1)
             try:
-                print(adm.list_of_trash)
                 action = input("O que deseja fazer: ")
                 if int(action)==0:
                     adm.lock_trash()

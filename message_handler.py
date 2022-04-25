@@ -34,26 +34,24 @@ class MessageHandler:
                 mac = msg['mac']
                 self.trash[mac] = {"filled_percentage": 0, "isLocked": False}
                 self.trash_connections[mac] = connection
-                print(self.adm)
                 if self.adm:
                     msg_to_adm = Message(origin="server", destination="adm", mac=self.mac, event="update_list_of_trash", data={"list_of_trash": self.trash})
-                    print(self.adm)
                     self.send_msg(self.adm, msg_to_adm)
-        elif not self.truck and msg['origin'] == 'truck':
+        elif msg['origin'] == 'truck':
             self.truck = connection
             msg_to_truck = Message(origin="server",destination="truck",mac=self.mac, event="update_list_to_collect", data={"list_to_collect": self.to_collect})
             self.send_msg(self.truck, msg_to_truck)
-        elif not self.adm and msg['origin'] == 'adm':
+        elif msg['origin'] == 'adm':
             self.adm = connection
             msg_to_adm = Message(origin="server", destination="adm", mac=self.mac, event="update_list_of_trash", data={"list_of_trash": self.trash})
-            self.send_msg(connection, msg_to_adm)
+            self.send_msg(self.adm, msg_to_adm)
     
     def update_trash(self, msg, connection):
         filled_percentage = float(msg['data']['filled_percentage'])
         is_locked = msg['data']['is_locked']
         mac = msg['mac']
         self.trash[mac] = {"filled_percentage": filled_percentage, "is_locked": is_locked}
-        if filled_percentage >= 85 or is_locked:
+        if filled_percentage >= 85:
             if mac not in self.to_collect:
                 self.to_collect.append(mac)
                 print("Lixeiras prontas para coleta: {}".format(self.to_collect))
@@ -70,9 +68,8 @@ class MessageHandler:
             self.to_collect.remove(mac)
     
     def lock_trash(self, msg, connection):
-        mac = msg['data']
-        lixeira = self.trash_connections.get(mac)
-        print(lixeira,mac)
+        mac = msg['data']['mac_to_lock']
+        lixeira = self.trash_connections.get(int(mac))
         if lixeira:
             msg = Message(origin="server",destination="trash",mac=self.mac, event="lock_trash")
             self.send_msg(lixeira, msg)
