@@ -33,12 +33,11 @@ class Client:
     
     def send_msg(self, origin: str, destination:str, mac:str, event:str, data:dict=None):
         msg = self.create_msg(origin, destination, mac, event, data)
-        print("Enviado mensagem: {}".format(msg))
+        print("Enviando mensagem: {}".format(msg))
         self.client_socket.send(str.encode(json.dumps(msg)))
     
     def recv_msg(self):
         return self.client_socket.recv(1024)
     
     def decode_msg(self, msg):
-        print(msg)
         return json.loads(msg)

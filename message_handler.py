@@ -18,9 +18,6 @@ class MessageHandler:
     def handle_msg(self, msg, connection):
         if msg['event'] == "register":
             self.register_client(msg, connection)
-            if self.adm:
-                msg_to_adm = Message(origin="server", destination="adm", mac=self.mac, event="update_trash_list", data={"trash_list": self.trash})
-                self.send(self.adm, msg_to_adm)
         elif msg['event'] == "update":
             self.update_trash(msg, connection)
             if self.adm:
@@ -34,14 +31,19 @@ class MessageHandler:
                 mac = msg['mac']
                 self.trash[mac] = {"filled_percentage": 0, "isLocked": False}
                 self.trash_connections[mac] = connection
-        elif msg['origin'] == 'truck':
+                print(self.adm)
+                if self.adm:
+                    msg_to_adm = Message(origin="server", destination="adm", mac=self.mac, event="update_list_of_trash", data={"list_of_trash": self.trash})
+                    print(self.adm)
+                    self.send(self.adm, msg_to_adm)
+        elif not self.truck and msg['origin'] == 'truck':
             self.truck = connection
             msg_to_truck = Message(origin="server",destination="truck",mac=self.mac, event="update_list_to_collect", data={"list_to_collect": self.to_collect})
             self.send_msg(self.truck, msg_to_truck)
-        elif msg['origin'] == 'adm':
-            self.adm == connection
-            msg_to_adm = Message(origin="server", destination="adm", mac=self.mac, event="update_trash_list", data={"trash_list": self.trash})
-            self.send_msg(self.adm, msg_to_adm)
+        elif not self.adm and msg['origin'] == 'adm':
+            self.adm = connection
+            msg_to_adm = Message(origin="server", destination="adm", mac=self.mac, event="update_list_of_trash", data={"list_of_trash": self.trash})
+            self.send_msg(connection, msg_to_adm)
     
     def update_trash(self, msg, connection):
         filled_percentage = float(msg['data']['filled_percentage'])
@@ -55,8 +57,10 @@ class MessageHandler:
                 if self.truck:
                     msg = Message(origin="server",destination="truck",mac=self.mac, event="update_list_to_collect", data={"list_to_collect": self.to_collect})
                     self.send_msg(self.truck, msg)
+        print("Vai entrar?")
         if self.adm:
-            msg_to_adm = Message(origin="server", destination="adm", mac=self.mac, event="update_trash_list", data={"trash_list": self.trash})
+            print("Entrei")
+            msg_to_adm = Message(origin="server", destination="adm", mac=self.mac, event="update_list_of_trash", data={"list_of_trash": self.trash})
             self.send(self.adm, msg_to_adm)
 
     def collect_trash(self, msg, connection):

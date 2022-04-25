@@ -20,7 +20,7 @@ class Administrador(Client):
                 print("Mensagem recebida: {}".format(msg_decoded))
                 self.handle_msg(msg_decoded)
         except Exception as e:
-            print(e)
+            pass
     
     def handle_msg(self, msg: Message):
         event = {"update_list_of_trash": self.update_list_of_trash }
@@ -45,7 +45,7 @@ class Administrador(Client):
     def lock_trash(self):
         dict_list = self.show_list_of_trash()
         which = input("Qual lixeira deseja travar?\n")
-        print(self.list_of_trash.get(dict_list[int(which)-1]))
+        input(self.list_of_trash.get(dict_list[int(which)-1]))
 
     def show_list_of_trash(self):
         idx = 1
@@ -66,4 +66,10 @@ if __name__ == "__main__":
     with adm:
         while True:
             adm.await_for_msg()
+            print("A cada um segundo, estarei aqui")
             time.sleep(1)
+            # try:
+            #     print(adm.list_of_trash)
+            #     adm.lock_trash()
+            # except:
+            #     print("Valor inválido")

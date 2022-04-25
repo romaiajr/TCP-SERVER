@@ -48,6 +48,7 @@ class Lixeira(Client):
     def empty(self):
         self.filled = 0
         self.unlock()
+        print("Lixeira Coletada!")
         
     def lock(self):
         self.is_locked = True
@@ -64,7 +65,17 @@ if __name__ == "__main__":
     lixeira = Lixeira(500)
     with lixeira:
         while True:
-            time.sleep(1)
-            if not lixeira.is_locked:
-                lixeira.fill(randint(30,70))
-            lixeira.await_for_msg()
+            try:
+                quantidadeLixo = int(input(
+                    "Deseja inserir quantas unidades de lixo?"))
+                if not lixeira.is_locked:
+                    lixeira.fill(quantidadeLixo)
+                    print(f"Capacidade atual: {lixeira.filled_percentage()}%")
+                else:
+                    print("Lixeira está fechada!")
+                desejaEncerrar = int(input(
+                    "Deseja encerrar conexão?\n0-Sim\n1-Não\n"))
+                if desejaEncerrar==0:
+                    break
+            except:
+                print("Valor inválido")
