@@ -25,6 +25,8 @@ class MessageHandler:
                 self.send_msg(self.adm, msg_to_adm)
         elif msg['event'] == "collect_trash":
             self.collect_trash(msg, connection)
+        elif msg['event'] == "lock_trash":
+            self.lock_trash(msg,connection)
         
     def register_client(self, msg, connection):
         if msg['origin'] == "trash":
@@ -66,6 +68,14 @@ class MessageHandler:
             msg = Message(origin="server",destination="trash",mac=self.mac, event="collect_trash")
             self.send_msg(lixeira, msg)
             self.to_collect.remove(mac)
+    
+    def lock_trash(self, msg, connection):
+        mac = msg['data']
+        lixeira = self.trash_connections.get(mac)
+        print(lixeira,mac)
+        if lixeira:
+            msg = Message(origin="server",destination="trash",mac=self.mac, event="lock_trash")
+            self.send_msg(lixeira, msg)
     
     def send_msg(self, destination, msg):
         sent = json.dumps(msg.get_msg()).encode('utf-8')
