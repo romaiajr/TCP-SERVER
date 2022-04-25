@@ -21,7 +21,8 @@ class MessageHandler:
         elif msg['event'] == "update":
             self.update_trash(msg, connection)
             if self.adm:
-                self.adm.send("messagem da atualização")
+                msg_to_adm = Message(origin="server", destination="adm", mac=self.mac, event="update_list_of_trash", data={"list_of_trash": self.trash})
+                self.send_msg(self.adm, msg_to_adm)
         elif msg['event'] == "collect_trash":
             self.collect_trash(msg, connection)
         
@@ -35,7 +36,7 @@ class MessageHandler:
                 if self.adm:
                     msg_to_adm = Message(origin="server", destination="adm", mac=self.mac, event="update_list_of_trash", data={"list_of_trash": self.trash})
                     print(self.adm)
-                    self.send(self.adm, msg_to_adm)
+                    self.send_msg(self.adm, msg_to_adm)
         elif not self.truck and msg['origin'] == 'truck':
             self.truck = connection
             msg_to_truck = Message(origin="server",destination="truck",mac=self.mac, event="update_list_to_collect", data={"list_to_collect": self.to_collect})
@@ -57,12 +58,7 @@ class MessageHandler:
                 if self.truck:
                     msg = Message(origin="server",destination="truck",mac=self.mac, event="update_list_to_collect", data={"list_to_collect": self.to_collect})
                     self.send_msg(self.truck, msg)
-        print("Vai entrar?")
-        if self.adm:
-            print("Entrei")
-            msg_to_adm = Message(origin="server", destination="adm", mac=self.mac, event="update_list_of_trash", data={"list_of_trash": self.trash})
-            self.send(self.adm, msg_to_adm)
-
+        
     def collect_trash(self, msg, connection):
         mac = msg['data']['mac_to_collect']
         lixeira = self.trash_connections.get(mac)

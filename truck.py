@@ -22,7 +22,7 @@ class Truck(Client):
                 print("Mensagem recebida: {}".format(msg_decoded))
                 self.handle_msg(msg_decoded)
         except Exception as e:
-            print(e)
+            pass
     
     def handle_msg(self, msg: Message):
         event = {"update_list_to_collect": self.update_list_to_collect }

@@ -21,7 +21,7 @@ class Lixeira(Client):
                 print("Mensagem recebida: {}".format(msg_decoded))
                 self.handle_msg(msg_decoded)
         except Exception as e:
-            print(e)
+            pass
     
     def handle_msg(self, msg: Message):
         event = {"lock_trash": self.lock, "unlock_trash": self.unlock, "collect_trash": self.empty }
@@ -60,11 +60,10 @@ class Lixeira(Client):
         return (self.filled * 100)/self.capacity
 
 if __name__ == "__main__":
-    from random import randint
-    import time
     lixeira = Lixeira(500)
     with lixeira:
         while True:
+            lixeira.await_for_msg()
             try:
                 quantidadeLixo = int(input(
                     "Deseja inserir quantas unidades de lixo?"))
