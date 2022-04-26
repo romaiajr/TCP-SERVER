@@ -1,7 +1,7 @@
 ## TCP-SERVER
 
 ### Setup do projeto
-- Na pasta do projeto, executar pip install requirements.txt -r
+- Na pasta raiz do projeto, executar pip install requirements.txt -r
 
 ### Executar servidor
 - python server.py
