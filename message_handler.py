@@ -2,6 +2,7 @@ from message import Message
 import json
 from uuid import getnode as get_mac
 
+#Classe responsável por lidar com as mensagens dentro do projeto, baseado em REST
 class MessageHandler:
 
     def __init__(self, truck_limit, trash_limit, adm_limit):
@@ -14,7 +15,10 @@ class MessageHandler:
         self.truck_limit = truck_limit
         self.trash_limit = trash_limit
         self.adm_limit = adm_limit
-    
+    """
+    Método responsável por receber e lidar com as mensagens que chegam no servidor, 
+    cada tipo de evento direciona para um método específico
+    """
     def handle_msg(self, msg, connection):
         if msg['event'] == "register":
             self.register_client(msg, connection)
@@ -27,7 +31,11 @@ class MessageHandler:
             self.collect_trash(msg, connection)
         elif msg['event'] == "lock_trash":
             self.lock_trash(msg,connection)
-        
+        elif msg['event'] == "unlock_trash":
+            self.unlock_trash(msg,connection)
+    """
+    Método responsável por registrar um cliente novo no servidor
+    """
     def register_client(self, msg, connection):
         if msg['origin'] == "trash":
             if len(self.trash_connections) < self.trash_limit:
@@ -45,7 +53,9 @@ class MessageHandler:
             self.adm = connection
             msg_to_adm = Message(origin="server", destination="adm", mac=self.mac, event="update_list_of_trash", data={"list_of_trash": self.trash})
             self.send_msg(self.adm, msg_to_adm)
-    
+    """
+    Método responsável por atualizar dados de uma lixeira
+    """
     def update_trash(self, msg, connection):
         filled_percentage = float(msg['data']['filled_percentage'])
         is_locked = msg['data']['is_locked']
@@ -58,7 +68,9 @@ class MessageHandler:
                 if self.truck:
                     msg = Message(origin="server",destination="truck",mac=self.mac, event="update_list_to_collect", data={"list_to_collect": self.to_collect})
                     self.send_msg(self.truck, msg)
-        
+    """
+    Método responsável por coletar o lixo de uma lixeira
+    """   
     def collect_trash(self, msg, connection):
         mac = msg['data']['mac_to_collect']
         lixeira = self.trash_connections.get(mac)
@@ -66,14 +78,28 @@ class MessageHandler:
             msg = Message(origin="server",destination="trash",mac=self.mac, event="collect_trash")
             self.send_msg(lixeira, msg)
             self.to_collect.remove(mac)
-    
+    """
+    Método responsável por travar uma lixeira
+    """
     def lock_trash(self, msg, connection):
         mac = msg['data']['mac_to_lock']
         lixeira = self.trash_connections.get(int(mac))
         if lixeira:
             msg = Message(origin="server",destination="trash",mac=self.mac, event="lock_trash")
             self.send_msg(lixeira, msg)
-    
+    """
+    Método responsável por destravar uma lixeira
+    """
+    def unlock_trash(self, msg, connection):
+        mac = msg['data']['mac_to_lock']
+        lixeira = self.trash_connections.get(int(mac))
+        if lixeira:
+            msg = Message(origin="server",destination="trash",mac=self.mac, event="unlock_trash")
+            self.send_msg(lixeira, msg)
+    """
+    Método responsável por enviar mensagem para os clientes, podendo ser adm, lixeira ou caminhão.
+    O parâmetro destination especifica qual será o cliente
+    """
     def send_msg(self, destination, msg):
         sent = json.dumps(msg.get_msg()).encode('utf-8')
         print(f"Enviando mensagem {sent}")

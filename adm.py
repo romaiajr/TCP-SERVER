@@ -31,7 +31,6 @@ class Administrador(Client):
     
     def update_list_of_trash(self, data):
         self.list_of_trash = data.get("list_of_trash")
-        print(self.list_of_trash)
         time.sleep(1)
     
     def change_list_of_trash(self):
@@ -42,7 +41,6 @@ class Administrador(Client):
                 which = input("Selecione o número da lixeira nº {idx}\n".format(idx=idx+1))
                 new_list[idx] = self.list_of_trash.get(dict_list[int(which)-1])
             self.list_of_trash = new_list
-            print(self.list_of_trash)
 
     def lock_trash(self):
         if self.list_of_trash:
@@ -57,6 +55,19 @@ class Administrador(Client):
                 print(e)
                 self.lock_trash()
 
+    def unlock_trash(self):
+        if self.list_of_trash:
+            self.show_list_of_trash()
+            trash_to_be_locked = input("Qual lixeira deseja destravar?\n")
+            macs = {id+1:value for id,value in enumerate(self.list_of_trash.keys())}
+            try:
+                trash = macs.get(int(trash_to_be_locked))
+                if trash:
+                    self.send_msg(origin="adm",destination="server",mac=self.mac, event="unlock_trash",data={"mac_to_lock": trash})
+            except Exception as e:
+                print(e)
+                self.lock_trash()
+
     def show_list_of_trash(self):
         try:
             idx = 1
@@ -66,27 +77,38 @@ class Administrador(Client):
         except Exception as e:
             print(e)
 
-
-    def simulate_list_of_trash(self, list_of_trash: list):
-        self.list_of_trash = list_of_trash
-
+#Função chamada quando o arquivo é executado
 if __name__ == "__main__":
     import time
+    from threading import Thread
     adm = Administrador()
-    switchParaPython={
-        0:adm.lock_trash(),
-    }
-    # adm.simulate_list_of_trash({"carro": "Roberto", "moto": "Daniel", "bicicleta": "Samuel"})
-    # adm.change_list_of_trash()
-    # adm.lock_trash()
-    with adm:
+    #Função responsável por sempre buscar novas mensagens
+    def awaitForMessage():
         while True:
+            global stop_threads
             adm.await_for_msg()
             time.sleep(1)
+            if stop_threads:
+                break
+    with adm:
+        thread = Thread(target=awaitForMessage)
+        thread.start()
+        stop_threads = False
+        while True:
             try:
-                action = input("O que deseja fazer: ")
-                if int(action)==0:
+                print(f"\n\nLixeiras conectadas atualmente: \n{adm.list_of_trash}")
+                action = int(input("O que deseja fazer: \n1-Trancar Lixeiras\n2-Destrancar Lixeiras\n3-Alterar ordem de coleta das lixeiras\n4-Atualizar visualmente as lixeiras\n5-Encerrar conexão\n"))
+                if action==1:
                     adm.lock_trash()
-                # switchParaPython.get(int(action))
+                elif action==2:
+                    adm.unlock_trash()
+                elif action==3:
+                    adm.change_list_of_trash()
+                elif action==4:
+                    continue
+                else:
+                    stop_threads = True
+                    thread.join()
+                    break
             except:
                 print("Valor inválido")

@@ -1,6 +1,7 @@
 import json
 
 valid_entities = {"trash","server","adm","truck"}
+#Classe com estrutura padrão para mensagens do protocolo desenvolvido
 class Message():
 
     def __init__ (self, origin: str, destination: str, mac:str, event: str, data=None):
@@ -18,9 +19,3 @@ class Message():
     
     def validate_msg(self):
         return self.origin in valid_entities and self.destination in valid_entities 
-
-if __name__ == "__main__":
-    msg = Message("truck","trash","18111240121212","collect_trash")
-    print(msg.get_msg())
-    msg = str.encode(json.dumps(msg.get_msg()))
-    print(json.loads(msg.decode('utf-8')))

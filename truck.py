@@ -35,22 +35,42 @@ class Truck(Client):
             self.list_to_collect = data.get('list_to_collect')
         elif data.get('mac'):
             self.list_to_collect.append(data.get('mac'))
-        print(self.list_to_collect)
-        time.sleep(1)
-        self.collect_trash()
         
     def collect_trash(self):
-        for trash in self.list_to_collect:
+        if self.list_to_collect:
             self.send_msg(
                 origin="truck",destination="trash",mac=self.mac, event= "collect_trash", 
-                data={"mac_to_collect": int(trash)})
-            time.sleep(1)
-        self.list_to_collect = []
-
+                data={"mac_to_collect": int(self.list_to_collect[0])})
+            self.list_to_collect.pop(0)
+#Função chamada quando o arquivo é executado
 if __name__ == "__main__":
     import time
+    from threading import Thread
     truck = Truck(500)
-    with truck:
+
+    def awaitForMessage():
         while True:
+            global stop_threads
             truck.await_for_msg()
             time.sleep(1)
+            if stop_threads:
+                break
+
+    with truck:
+        thread = Thread(target=awaitForMessage)
+        thread.start()
+        stop_threads = False
+        while True:
+            try:
+                print(f"\n\nLixeiras para coleta: \n{truck.list_to_collect}")
+                action = int(input("O que deseja fazer: \n1-Coletar primeira lixeira da lista\n2-Atualizar visualmente as lixeiras\n3-Encerrar conexão\n"))
+                if action==1:
+                    truck.collect_trash()
+                elif action==2:
+                    continue
+                else:
+                    stop_threads = True
+                    thread.join()
+                    break
+            except:
+                print("Valor inválido")

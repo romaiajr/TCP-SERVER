@@ -1,3 +1,4 @@
+from concurrent.futures import thread
 from client import Client
 from message import Message
 
@@ -58,23 +59,40 @@ class Lixeira(Client):
 
     def filled_percentage(self) -> float:
         return (self.filled * 100)/self.capacity
-
+#Função chamada quando o arquivo é executado
 if __name__ == "__main__":
+    import time
+    from threading import Thread
     lixeira = Lixeira(500)
-    with lixeira:
+    def awaitForMessage():
         while True:
+            global stop_threads
             lixeira.await_for_msg()
+            time.sleep(1)
+            if stop_threads:
+                break
+            
+    with lixeira:
+        thread = Thread(target=awaitForMessage)
+        thread.start()
+        stop_threads = False
+        while True:
             try:
-                quantidadeLixo = int(input(
-                    "Deseja inserir quantas unidades de lixo?"))
-                if not lixeira.is_locked:
-                    lixeira.fill(quantidadeLixo)
-                    print(f"Capacidade atual: {lixeira.filled_percentage()}%")
+                print("\n\nEstado da lixeira:\nCapacidade Ocupada da lixeira/Porcentagem de ocupação: ",lixeira.filled,"/",lixeira.capacity,"(",lixeira.filled_percentage(),"%)","Estado de abertura: ",not lixeira.is_locked)
+                action = int(input("\n\nO que deseja fazer: \n1-Inserir Lixo\n2-Atualizar visualmente a lixeira\n3-Encerrar conexão\n"))
+                if action==1:
+                    quantidadeLixo = int(input(
+                        "Deseja inserir quantas unidades de lixo?"))
+                    if not lixeira.is_locked:
+                        lixeira.fill(quantidadeLixo)
+                        print(f"Capacidade atual: {lixeira.filled_percentage()}%")
+                    else:
+                        print("Lixeira está fechada!")
+                elif action==2:
+                    continue
                 else:
-                    print("Lixeira está fechada!")
-                desejaEncerrar = int(input(
-                    "Deseja encerrar conexão?\n0-Sim\n1-Não\n"))
-                if desejaEncerrar==0:
+                    stop_threads = True
+                    thread.join()
                     break
             except:
                 print("Valor inválido")
