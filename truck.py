@@ -1,4 +1,7 @@
+from flask import Flask
 from mqtt_client import MQTTClient
+
+app = Flask(__name__)
 
 class Truck(MQTTClient):
 
@@ -12,3 +15,16 @@ class Truck(MQTTClient):
         #Rodar intervalos de tempo x variados para coletar
         #self.publish_msg(dumbster, msg={"event": 'collect'})
         pass
+
+@app.route("/", methods=['GET'])
+def health_check():
+	return 'Caminhão Funcionando'
+
+@app.route("/atualizar-mapa",  methods=['POST'])
+def update_map():
+	return 'Atualizar mapa de coleta'
+
+
+
+if __name__ == "__main__":
+	app.run()

@@ -12,8 +12,10 @@ class Dumpster(MQTTClient):
         self.section = None
     
     def register(self):
-        #fazer get para a API e ver qual a section
-        self.publish(event='register')
+        #GET no servidor enviando as coordenadas
+        #Com o retorno, fazemos o publish de registro no setor
+        # self.publish(event='register')
+        pass
         
     def fill(self, value: int):
         if self.is_locked:
@@ -52,6 +54,7 @@ if __name__ == "__main__":
     import time
     dumpster = Dumpster(1,1,500)
     print(dumpster.id)
+    dumpster.register()
     with dumpster:
         while True:
             time.sleep(3)

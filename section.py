@@ -8,12 +8,11 @@ class Section:
         self.long = long
         self.lat = lat
         self.transhipment = None
-    
+
     def self_register():
         #fazer post para API informando os dados do setor
         pass
     #quando der sucesso criar o transbordo
-
 
 #Responsável pelo MQTT
 class Transhipment(MQTTClient):
@@ -36,6 +35,10 @@ class Transhipment(MQTTClient):
         self.dumpsters[payload['id']] = payload['data']
         self.most_critical_dumpsters()
 
-    def most_critical_dumpsters():
+    def most_critical_dumpsters(self):
+        aux = {}
+        for dumpster in self.dumpsters:
+            if dumpster["filled_percentage"] >= 80 or dumpster["is_locked"]:
+                pass
         pass
         #sempre que algum lixo for atualizado, editar a lista de lixos e enviar para o servidor via POST
