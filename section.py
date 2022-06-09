@@ -2,7 +2,6 @@ import uuid
 from mqtt_client import MQTTClient
 import requests
 import json
-import ast
 
 BASE_URL = "http://127.0.0.1:5000"
 
@@ -33,10 +32,10 @@ class Transhipment(MQTTClient):
     
     def on_message(self,client, userdata, msg):
         event_dict = {'register': self.register_dumpster, 'update': self.update_dumpster}
-        print(msg.payload)
-        execute = event_dict.get(msg.payload['event'])
+        payload = json.loads(msg.payload.decode())
+        execute = event_dict.get(payload['event'])
         if execute:
-            execute(msg.payload)
+            execute(payload)
 
     def register_dumpster(self, payload):
         self.dumpsters[payload['id']] = {"filled_percentage": 0, "isLocked": False, "id":payload['id']}
@@ -44,7 +43,8 @@ class Transhipment(MQTTClient):
 
     def update_dumpster(self, payload):
         self.dumpsters[payload['id']] = payload['data']
-        response = requests.post(f'{BASE_URL}/update-dumpster', json=self.dumpsters[payload['id']])
+        print(self.dumpsters)
+        requests.post(f'{BASE_URL}/update-dumpster', json=self.dumpsters[payload['id']])
 
 if __name__ == "__main__":
     section = Section(20,30)
