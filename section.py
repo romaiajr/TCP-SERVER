@@ -35,6 +35,7 @@ class Transhipment(MQTTClient):
     #Método para lidar com mensagens mqtt
     def on_message(self,client, userdata, msg):
         event_dict = {'register': self.register_dumpster, 'update': self.update_dumpster}
+        print(msg.payload)
         payload = json.loads(str(msg.payload.decode('utf-8')).replace("'",'"'))
         print(payload)
         execute = event_dict.get(payload['event'])

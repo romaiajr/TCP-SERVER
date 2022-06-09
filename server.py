@@ -60,10 +60,13 @@ class Server:
 
     #Método para atualizar as lixeiras do servidor
     def update_dumpsters(self, payload):
-        self.most_critical_dumpsters[payload['id']] = payload
-        self.sort_critical_dumpsters()
-        self.build_collect_map()
-        return 200
+        try:
+            self.most_critical_dumpsters[payload['id']] = payload
+            self.sort_critical_dumpsters()
+            # self.build_collect_map()
+            return jsonify({"msg": "Lixeira atualizada com sucesso"}), 200
+        except Exception as e:
+            return jsonify({"msg": e})
 
     #Método para ordenar as lixeiras da mais crítica à menos
     def sort_critical_dumpsters(self):
@@ -84,6 +87,7 @@ class Server:
     #Método para enviar o mapa de coleta para o caminhão
     def build_collect_map(self):
         requests.post(f'{BASE_URL_TRUCK}/update-map', json=self.collect_map)
+        return
 
 server = Server()
 

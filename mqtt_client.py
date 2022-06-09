@@ -25,17 +25,16 @@ class MQTTClient:
         client = mqtt.Client(f'sub{self.id}')
         client.on_connect = self.on_connect
         client.on_message = self.on_message
-        client.connect("localhost", 1883, 60)
+        client.connect("localhost", 1884, 60)
         client.loop_forever()
 
     def publish_msg(self, topic, msg):
-        print(f"Sending msg: {msg}")
+        print(f"Sending msg: {msg} to topic: {topic}")
         client = mqtt.Client(f'pub{self.id}')
-        client.connect("localhost", 1883, 60)
+        client.connect("localhost", 1884, 60)
         client.publish(topic, str(json.dumps(msg)))
         client.loop_start()
-        client.disconnect()
 
 if __name__ == "__main__":
     mqtt = MQTTClient()
-    mqtt.connect()
+    mqtt.subscribe()

@@ -42,10 +42,9 @@ class Dumpster(MQTTClient):
                 self.filled += value
                 if self.filled == self.capacity:
                     self.lock()
-                self.publish(event='update', data={'filled_percentage': self.filled_percentage(), "is_locked": self.is_locked, "id": self.id}) 
             else:
                 self.lock()
-                self.publish(event='update', data={'filled_percentage': self.filled_percentage(), "is_locked": self.is_locked, "id": self.id}) 
+            self.publish(event='update', data={'filled_percentage': self.filled_percentage(), "is_locked": self.is_locked, "id": self.id}) 
             
 
     #Método para coleta da lixeira   
@@ -74,6 +73,7 @@ class Dumpster(MQTTClient):
 
     #Método responsável por publicar mensagens mqtt
     def publish(self, event, data={}):
+        print(self.section)
         if self.section:
             self.publish_msg(topic = self.section, msg={"id": self.id, "event": event, "data": data})
 
