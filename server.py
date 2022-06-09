@@ -54,7 +54,7 @@ class Server:
 
     #Método para retornar n lixeiras do array
     def get_dumpsters(self, n):
-        if n < len(self.most_critical_dumpsters):
+        if int(n) < len(self.most_critical_dumpsters):
             return self.most_critical_dumpsters[0:n]
         return self.most_critical_dumpsters
 
@@ -93,12 +93,10 @@ def health_check():
 
 @app.route("/dumpster/<id>",  methods=['GET'])
 def get_dumpster(id):
-    print(id)
     return server.get_dumpster(id)
 
 @app.route("/dumpsters/<qtd>",  methods=['GET'])
 def get_most_critical_dumpsters(qtd):
-    print(qtd)
     return server.get_dumpsters(qtd)
 
 @app.route("/update-dumpster",  methods=['POST'])
