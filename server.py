@@ -5,12 +5,14 @@ BASE_URL_TRUCK = "http://127.0.0.1:5050"
 import requests
 app = Flask(__name__)
 
+#Classe responsável por implementar o servidor
 class Server:
     def __init__(self):
         self.most_critical_dumpsters = {}
         self.sections = {}
         self.collect_map = []
     
+    #Método para registrar um novo setor
     def register_section(self,section):
         try:
             self.sections[section['id']] = section
@@ -18,6 +20,7 @@ class Server:
         except Exception as e:
             return jsonify({"msg": e})
 
+    #Método para retornar o melhor setor para uma lixeira de acordo com a distância euclidiana
     def register_dumpster(self, coordinate):
         try:
             if self.sections:
@@ -35,6 +38,7 @@ class Server:
             print(e)
             return jsonify({"msg": e})
 
+    #Método para retornar uma lixeira x a partir do ID
     def get_dumpster(self, id):
         try:
             dumpster = self.most_critical_dumpsters.get(id)
@@ -45,16 +49,20 @@ class Server:
         except Exception as e:
             return jsonify({"msg": e})
 
-    def get_dumpsters(self):
+    #Método para retornar n lixeiras do array
+    def get_dumpsters(self, n):
+        if n < len(self.most_critical_dumpsters):
+            return self.most_critical_dumpsters[0:n]
         return self.most_critical_dumpsters
 
-    #TODO
+    #Método para atualizar as lixeiras do servidor
     def update_dumpsters(self, payload):
         self.most_critical_dumpsters[payload['id']] = payload['data']
-        self.sort_critial_dumpsters()
+        self.sort_critical_dumpsters()
         self.collect_map()
 
-    def sort_critial_dumpsters(self):
+    #Método para ordenar as lixeiras da mais crítica à menos
+    def sort_critical_dumpsters(self):
         collect_map = []
         dumpstersList = [] 
         critical_dumpsters = {}
@@ -69,9 +77,9 @@ class Server:
         self.most_critical_dumpsters = critical_dumpsters
         self.collect_map = collect_map
 
-    #TODO
+    #Método para enviar o mapa de coleta para o caminhão
     def build_collect_map(self):
-        response = requests.post(f'{BASE_URL_TRUCK}/update-dumpster', json=self.collect_map)
+        requests.post(f'{BASE_URL_TRUCK}/update-dumpster', json=self.collect_map)
 
 server = Server()
 
@@ -87,9 +95,8 @@ def get_dumpster(id):
 @app.route("/dumpsters/<qtd>",  methods=['GET'])
 def get_most_critical_dumpsters(qtd):
     print(qtd)
-    return server.get_dumpsters()
+    return server.get_dumpsters(qtd)
 
-#TODO
 @app.route("/update-dumpsters",  methods=['POST'])
 def update_dumpsters():
     return server.update_dumpsters(request.json)

@@ -6,11 +6,13 @@ import random
 
 app = Flask(__name__)
 
+#Classe que implementar o caminhão
 class Truck(MQTTClient):
 
     def __init__(self):
         self.map = []
 
+    #Método para atualizar o mapa de coleta
     def update_map(self, map):
         try:
             self.map = map
@@ -18,6 +20,7 @@ class Truck(MQTTClient):
         except Exception as e:
             return jsonify({"msg": e})
 
+    #Método coletar as lixeiras em n intervalos de tempo variados
     #TODO rodar em paralelo à API num while true
     def collect_trash(self, topic):
         if self.collect_trash:

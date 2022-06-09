@@ -2,10 +2,12 @@ import uuid
 import paho.mqtt.client as mqtt
 import threading
 
+
+#Classe responsável por implementar o MQTT
 class MQTTClient:
 
     def __init__(self,id = None) -> None:
-        self.id = id if id else str(uuid.uuid4())
+        self.id = id if id else str(uuid.uuid4()) # Identificador único para todo cliente mqtt, representando seu tópico
         self.client = mqtt.Client()
         print(self.id)
         
@@ -19,7 +21,7 @@ class MQTTClient:
     def on_message(self, client, userdata, msg):
         mensagem = str(msg.payload.decode("utf-8"))
         print(mensagem)
-
+        
     def connect(self):
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
