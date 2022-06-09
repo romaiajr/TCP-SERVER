@@ -33,7 +33,8 @@ class Transhipment(MQTTClient):
         event_dict = {'register': self.register_dumpster, 'update': self.update_dumpster}
         payload = msg.payload
         execute = event_dict.get(payload['event'])
-        execute(payload)
+        if execute:
+            execute(payload)
 
     def register_dumpster(self, payload):
         self.dumpsters[payload['id']] = {"filled_percentage": 0, "isLocked": False}
@@ -57,4 +58,3 @@ class Transhipment(MQTTClient):
 
 if __name__ == "__main__":
     section = Section(20,30)
-    section.transhipment.execute()

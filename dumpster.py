@@ -54,10 +54,8 @@ class Dumpster(MQTTClient):
     
     def publish(self, event, data=None):
         if self.section:
-            print(self.section)
             self.publish_msg(topic = self.section, msg={"id": self.id, "event": event, "data": data})
 
 if __name__ == "__main__":
     dumpster = Dumpster(20,15,500)
-    dumpster.register()
-    dumpster.execute()
+  
