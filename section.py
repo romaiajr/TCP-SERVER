@@ -44,8 +44,16 @@ class Transhipment(MQTTClient):
 
     #TODO
     def most_critical_dumpsters(self):
-        pass
-        #sempre que algum lixo for atualizado, editar a lista de lixos e enviar para o servidor via POST
+        dumpstersList = [] 
+        critical_dumpsters = {}
+        for dumpster in self.dumpsters.keys():
+            insert = self.dumpsters[dumpster]
+            insert['id'] = dumpster
+            dumpstersList.append(insert)
+        dumpstersList = sorted(dumpstersList,reverse=True, key=lambda k : k['filled_percentage'])
+        for dumpster in dumpstersList:
+            critical_dumpsters[dumpster["id"]] = dumpster
+        self.critical_dumpsters = critical_dumpsters
 
 if __name__ == "__main__":
     section = Section(20,30)
