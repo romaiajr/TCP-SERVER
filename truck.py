@@ -1,5 +1,8 @@
 from flask import Flask
+from flask import request,jsonify
 from mqtt_client import MQTTClient
+import time
+import random
 
 app = Flask(__name__)
 
@@ -9,12 +12,20 @@ class Truck(MQTTClient):
         self.map = []
 
     def update_map(self, map):
-        pass
+        try:
+            self.map = map
+            return jsonify({"msg": "Mapa de coleta atualizado"}),200
+        except Exception as e:
+            return jsonify({"msg": e})
 
+    #TODO rodar em paralelo à API num while true
     def collect_trash(self, topic):
-        #Rodar intervalos de tempo x variados para coletar
-        #self.publish_msg(dumbster, msg={"event": 'collect'})
-        pass
+        if self.collect_trash:
+            time.sleep(random.randint(3,8))
+            dumpster = self.map.pop(0)     
+            self.publish_msg(dumpster, msg={"event": 'collect'})
+
+truck = Truck()
 
 @app.route("/", methods=['GET'])
 def health_check():
@@ -22,9 +33,7 @@ def health_check():
 
 @app.route("/atualizar-mapa",  methods=['POST'])
 def update_map():
-	return 'Atualizar mapa de coleta'
-
-
+	return truck.update_map(request.json)
 
 if __name__ == "__main__":
 	app.run()

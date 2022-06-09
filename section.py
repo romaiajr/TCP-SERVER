@@ -1,28 +1,35 @@
 import uuid
 from mqtt_client import MQTTClient
+import requests
+BASE_URL = "http://127.0.0.1:5000"
 
 class Section:
 
     def __init__(self, long, lat) -> None:
-        self.id = uuid.uuid4()
+        self.id = str(uuid.uuid4())
         self.long = long
         self.lat = lat
         self.transhipment = None
+        self.register()
 
-    def self_register():
-        #fazer post para API informando os dados do setor
-        pass
-    #quando der sucesso criar o transbordo
+    def register(self):
+        payload = {"id": str(self.id), "long": self.long, "lat": self.lat}
+        response = requests.post(f'{BASE_URL}/register-section', json=payload)
+        if response.status_code == 200:
+            self.transhipment = Transhipment(self.id)
+        else:
+            print("Ocorreu um erro ao tentar registrar o setor")
 
 #Responsável pelo MQTT
 class Transhipment(MQTTClient):
 
     def __init__(self, id) -> None:
-        super.__init__(id)
+        MQTTClient.__init__(self, id)
         self.dumpsters = {}
-        self.critical_dumpsters = []
-
+        self.critical_dumpsters = {}
+    
     def on_message(self,client, userdata, msg):
+        print(msg)
         event_dict = {'register': self.register_dumpster, 'update': self.update_dumpster}
         payload = msg.payload
         execute = event_dict.get(payload['event'])
@@ -35,10 +42,11 @@ class Transhipment(MQTTClient):
         self.dumpsters[payload['id']] = payload['data']
         self.most_critical_dumpsters()
 
+    #TODO
     def most_critical_dumpsters(self):
-        aux = {}
-        for dumpster in self.dumpsters:
-            if dumpster["filled_percentage"] >= 80 or dumpster["is_locked"]:
-                pass
         pass
         #sempre que algum lixo for atualizado, editar a lista de lixos e enviar para o servidor via POST
+
+if __name__ == "__main__":
+    section = Section(20,30)
+    section.transhipment.execute()

@@ -4,7 +4,7 @@ import paho.mqtt.client as mqtt
 class MQTTClient:
 
     def __init__(self,id = None) -> None:
-        self.id = id if id else uuid.uuid4()
+        self.id = id if id else str(uuid.uuid4())
         self.client = mqtt.Client()
 
     def on_connect(self,client, userdata, flags, rc):
@@ -12,16 +12,19 @@ class MQTTClient:
 
     #Sobrescrever de acordo com cada cliente
     def on_message(self,client, userdata, msg):
-        pass
+        print(msg)
 
     def publish_msg(self, topic, msg):
-        self.client.publish(topic, msg)
+        print(topic, msg)
+        self.client.publish(topic, str(msg))
 
-    def __enter__(self):
+    def execute(self):
+        print(self.id)
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
-        self.client.connect("localhost", 1883, 60)
+        self.client.connect("localhost", 1884, 60)
         self.client.loop_forever()
-    
-    def __exit__(self):
-        self.client._clean_session()
+
+if __name__ == "__main__":
+    mqtt = MQTTClient()
+    mqtt.execute() 

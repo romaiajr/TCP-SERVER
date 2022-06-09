@@ -1,4 +1,6 @@
 from mqtt_client import MQTTClient
+import requests
+BASE_URL = "http://127.0.0.1:5000"
 
 class Dumpster(MQTTClient):
 
@@ -12,10 +14,13 @@ class Dumpster(MQTTClient):
         self.section = None
     
     def register(self):
-        #GET no servidor enviando as coordenadas
-        #Com o retorno, fazemos o publish de registro no setor
-        # self.publish(event='register')
-        pass
+        payload = {"long": self.long, "lat": self.lat}
+        response = requests.post(f'{BASE_URL}/register-dumpster', json=payload)
+        if response.status_code == 200:
+            self.section = response.json()['id']
+            self.publish(event='register')
+        else:
+            print("Ocorreu um erro ao tentar registrar a lixeira")
         
     def fill(self, value: int):
         if self.is_locked:
@@ -43,20 +48,16 @@ class Dumpster(MQTTClient):
         return (self.filled * 100)/self.capacity
     
     def on_message(self,client, userdata, msg):
+        print(msg)
         if msg.payload['event'] == 'collect':
             self.empty()
     
     def publish(self, event, data=None):
         if self.section:
-            self.publish_msg(self.section, msg={"id": self.id, "event": event, "data": data})
+            print(self.section)
+            self.publish_msg(topic = self.section, msg={"id": self.id, "event": event, "data": data})
 
 if __name__ == "__main__":
-    import time
-    dumpster = Dumpster(1,1,500)
-    print(dumpster.id)
+    dumpster = Dumpster(20,15,500)
     dumpster.register()
-    with dumpster:
-        while True:
-            time.sleep(3)
-            print("Okay")
-            #Encher em intervalos x de tempo variados e com valores variados
+    dumpster.execute()
