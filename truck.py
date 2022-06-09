@@ -10,12 +10,14 @@ app = Flask(__name__)
 class Truck(MQTTClient):
 
     def __init__(self):
+        MQTTClient.__init__(self)
         self.map = []
 
     #Método para atualizar o mapa de coleta
     def update_map(self, map):
         try:
             self.map = map
+            print(self.map)
             return jsonify({"msg": "Mapa de coleta atualizado"}),200
         except Exception as e:
             return jsonify({"msg": e})
@@ -34,7 +36,7 @@ truck = Truck()
 def health_check():
 	return 'Caminhão Funcionando'
 
-@app.route("/atualizar-mapa",  methods=['POST'])
+@app.route("/update-map",  methods=['POST'])
 def update_map():
 	return truck.update_map(request.json)
 

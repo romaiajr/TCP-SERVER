@@ -16,6 +16,7 @@ class Server:
     def register_section(self,section):
         try:
             self.sections[section['id']] = section
+            print(self.sections)
             return jsonify({"msg": "Registered"}),200
         except Exception as e:
             return jsonify({"msg": e})
@@ -27,7 +28,9 @@ class Server:
                 best_section = None
                 lower_dist = 50000
                 for section in self.sections.values():
-                    current_dist = dist([section['lat'], section['long']], [coordinate['lat'], coordinate['long']])
+                    coord_section = [int(section['lat']), int(section['long'])]
+                    coord_dumpster = [int(coordinate['lat']), int(coordinate['long'])]
+                    current_dist = dist(coord_section, coord_dumpster)
                     if current_dist < lower_dist:
                         best_section = section['id']
                         lower_dist = current_dist
@@ -57,9 +60,10 @@ class Server:
 
     #Método para atualizar as lixeiras do servidor
     def update_dumpsters(self, payload):
-        self.most_critical_dumpsters[payload['id']] = payload['data']
+        self.most_critical_dumpsters[payload['id']] = payload
         self.sort_critical_dumpsters()
-        self.collect_map()
+        self.build_collect_map()
+        return 200
 
     #Método para ordenar as lixeiras da mais crítica à menos
     def sort_critical_dumpsters(self):
@@ -79,7 +83,7 @@ class Server:
 
     #Método para enviar o mapa de coleta para o caminhão
     def build_collect_map(self):
-        requests.post(f'{BASE_URL_TRUCK}/update-dumpster', json=self.collect_map)
+        requests.post(f'{BASE_URL_TRUCK}/update-map', json=self.collect_map)
 
 server = Server()
 
@@ -97,8 +101,9 @@ def get_most_critical_dumpsters(qtd):
     print(qtd)
     return server.get_dumpsters(qtd)
 
-@app.route("/update-dumpsters",  methods=['POST'])
+@app.route("/update-dumpster",  methods=['POST'])
 def update_dumpsters():
+    print(request.json)
     return server.update_dumpsters(request.json)
 
 @app.route("/register-dumpster",  methods=['POST'])

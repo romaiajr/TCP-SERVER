@@ -1,3 +1,4 @@
+import threading
 from mqtt_client import MQTTClient
 import requests
 import time
@@ -23,7 +24,10 @@ class Dumpster(MQTTClient):
         if response.status_code == 200:
             self.section = response.json()['id']
             self.publish(event='register')
-            self.fill()
+            t1 = threading.Thread(target=self.subscribe)
+            t2 = threading.Thread(target=self.fill)
+            t1.start()
+            t2.start()
         else:
             print("Ocorreu um erro ao tentar registrar a lixeira")
         
@@ -38,9 +42,11 @@ class Dumpster(MQTTClient):
                 self.filled += value
                 if self.filled == self.capacity:
                     self.lock()
+                self.publish(event='update', data={'filled_percentage': self.filled_percentage(), "is_locked": self.is_locked, "id": self.id}) 
             else:
                 self.lock()
-            self.publish(event='update', data={'filled_percentage': self.filled_percentage(), "is_locked": self.is_locked})
+                self.publish(event='update', data={'filled_percentage': self.filled_percentage(), "is_locked": self.is_locked, "id": self.id}) 
+            
 
     #Método para coleta da lixeira   
     def empty(self):
@@ -67,12 +73,12 @@ class Dumpster(MQTTClient):
             self.empty()
 
     #Método responsável por publicar mensagens mqtt
-    def publish(self, event, data=None):
+    def publish(self, event, data={}):
         if self.section:
             self.publish_msg(topic = self.section, msg={"id": self.id, "event": event, "data": data})
 
 #TODO rodar o on_message na thread
 if __name__ == "__main__":
-    dumpster = Dumpster(randint(0,50),(0,50),(200,500))
+    dumpster = Dumpster(randint(0,50),randint(0,50),randint(200,500))
     dumpster.register()
   

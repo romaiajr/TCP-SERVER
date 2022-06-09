@@ -2,6 +2,7 @@ import uuid
 from mqtt_client import MQTTClient
 import requests
 import json
+from random import randint
 
 BASE_URL = "http://127.0.0.1:5000"
 #Classe responsável por implementar o setor
@@ -34,7 +35,8 @@ class Transhipment(MQTTClient):
     #Método para lidar com mensagens mqtt
     def on_message(self,client, userdata, msg):
         event_dict = {'register': self.register_dumpster, 'update': self.update_dumpster}
-        payload = json.loads(msg.payload.decode())
+        payload = json.loads(str(msg.payload.decode('utf-8')).replace("'",'"'))
+        print(payload)
         execute = event_dict.get(payload['event'])
         if execute:
             execute(payload)
@@ -51,5 +53,5 @@ class Transhipment(MQTTClient):
         requests.post(f'{BASE_URL}/update-dumpster', json=self.dumpsters[payload['id']])
 
 if __name__ == "__main__":
-    section = Section(20,30)
-    section.transhipment.connect()
+    section = Section(randint(0,50),randint(0,50))
+    section.transhipment.subscribe()
