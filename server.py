@@ -71,8 +71,8 @@ def get_most_critical_dumpsters(qtd):
     return server.get_dumpsters()
 
 #TODO
-@app.route("/update-most-critical-dumpsters",  methods=['POST'])
-def update_most_critical_dumpsters():
+@app.route("/update-dumpsters",  methods=['POST'])
+def update_dumpsters():
     print(request['data'])
     return server.update_dumpsters()
 
