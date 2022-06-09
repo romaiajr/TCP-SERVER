@@ -58,4 +58,5 @@ class Dumpster(MQTTClient):
 
 if __name__ == "__main__":
     dumpster = Dumpster(20,15,500)
+    dumpster.register()
   

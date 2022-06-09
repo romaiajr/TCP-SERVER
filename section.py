@@ -1,6 +1,9 @@
 import uuid
 from mqtt_client import MQTTClient
 import requests
+import json
+import ast
+
 BASE_URL = "http://127.0.0.1:5000"
 
 class Section:
@@ -29,24 +32,20 @@ class Transhipment(MQTTClient):
         self.critical_dumpsters = {}
     
     def on_message(self,client, userdata, msg):
-        print(msg)
         event_dict = {'register': self.register_dumpster, 'update': self.update_dumpster}
-        payload = msg.payload
-        execute = event_dict.get(payload['event'])
+        print(msg.payload)
+        execute = event_dict.get(msg.payload['event'])
         if execute:
-            execute(payload)
+            execute(msg.payload)
 
     def register_dumpster(self, payload):
-        self.dumpsters[payload['id']] = {"filled_percentage": 0, "isLocked": False}
+        self.dumpsters[payload['id']] = {"filled_percentage": 0, "isLocked": False, "id":payload['id']}
+        print(self.dumpsters)
 
     def update_dumpster(self, payload):
         self.dumpsters[payload['id']] = payload['data']
-        self.most_critical_dumpsters()
-
-    #TODO
-    def most_critical_dumpsters(self):
-        pass
-        #sempre que algum lixo for atualizado, editar a lista de lixos e enviar para o servidor via POST
+        response = requests.post(f'{BASE_URL}/update-dumpster', json=self.dumpsters[payload['id']])
 
 if __name__ == "__main__":
     section = Section(20,30)
+    section.transhipment.connect()
