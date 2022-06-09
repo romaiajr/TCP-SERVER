@@ -36,4 +36,4 @@ def update_map():
 	return truck.update_map(request.json)
 
 if __name__ == "__main__":
-	app.run()
+	app.run(port=5050)

@@ -1,13 +1,15 @@
 from flask import Flask
 from flask import request, jsonify
 from math import dist
+BASE_URL_TRUCK = "http://127.0.0.1:5050"
+import requests
 app = Flask(__name__)
 
 class Server:
     def __init__(self):
         self.most_critical_dumpsters = {}
         self.sections = {}
-        self.collect_map = {}
+        self.collect_map = []
     
     def register_section(self,section):
         try:
@@ -47,12 +49,29 @@ class Server:
         return self.most_critical_dumpsters
 
     #TODO
-    def update_dumpsters():
-        pass
+    def update_dumpsters(self, payload):
+        self.most_critical_dumpsters[payload['id']] = payload['data']
+        self.sort_critial_dumpsters()
+        self.collect_map()
+
+    def sort_critial_dumpsters(self):
+        collect_map = []
+        dumpstersList = [] 
+        critical_dumpsters = {}
+        for dumpster in self.most_critical_dumpsters.keys():
+            insert = self.most_critical_dumpsters[dumpster]
+            insert['id'] = dumpster
+            dumpstersList.append(insert)
+        dumpstersList = sorted(dumpstersList,reverse=True, key=lambda k : k['filled_percentage'])
+        for dumpster in dumpstersList:
+            collect_map.append(dumpster["id"])
+            critical_dumpsters[dumpster["id"]] = dumpster
+        self.most_critical_dumpsters = critical_dumpsters
+        self.collect_map = collect_map
 
     #TODO
-    def build_collect_map():
-        pass
+    def build_collect_map(self):
+        response = requests.post(f'{BASE_URL_TRUCK}/update-dumpster', json=self.collect_map)
 
 server = Server()
 
@@ -73,8 +92,7 @@ def get_most_critical_dumpsters(qtd):
 #TODO
 @app.route("/update-dumpsters",  methods=['POST'])
 def update_dumpsters():
-    print(request['data'])
-    return server.update_dumpsters()
+    return server.update_dumpsters(request.json)
 
 @app.route("/register-dumpster",  methods=['POST'])
 def register_dumpster():
