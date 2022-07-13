@@ -1,8 +1,10 @@
 from flask import Flask
 from flask import request, jsonify
 from math import dist
+from decouple import config as env
 import requests
 app = Flask(__name__)
+URL = env('URL')
 
 #Classe responsável por implementar o servidor
 class Server:
@@ -114,4 +116,4 @@ def get_roadmap():
     return server.get_roadmap()
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host=URL)
