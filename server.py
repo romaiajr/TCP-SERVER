@@ -3,9 +3,9 @@ from flask import request, jsonify
 from math import dist
 import requests
 app = Flask(__name__)
-BASE_URL1 = "25.2.231.195:5000"
-BASE_URL2 = "25.2.240.249:5000"
-BASE_URL3 = "25.3.139.238:5000"
+BASE_URL_ROBERTO = "25.2.231.195:5000"
+BASE_URL_DANIEL_ACER = "25.2.240.249:5000"
+BASE_URL_DANIEL_LENOVO = "25.3.139.238:5000"
 
 #Classe responsável por implementar o servidor
 class Server:
@@ -76,8 +76,8 @@ class Server:
     #montar a lista de lixeiras para coleta entre todos os setores
     #TODO
     def get_roadmap(self):
-        setor2 = requests.get(f'{BASE_URL2}/get-roadmap')
-        setor3 = requests.get(f'{BASE_URL3}/get-roadmap')
+        setor2 = requests.get(f'{BASE_URL_DANIEL_ACER}/get-roadmap')
+        setor3 = requests.get(f'{BASE_URL_DANIEL_LENOVO}/get-roadmap')
         all_sectors_map = self.collect_map + setor2.json() + setor3.json()
         collect_map = self.sort_most_critical_dumpsters(all_sectors_map)
         return jsonify(collect_map)
