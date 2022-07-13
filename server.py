@@ -83,7 +83,7 @@ class Server:
         return jsonify(all_sectors_map)
 
     def get_collect_map(self):
-        return self.collect_map
+        return jsonify(self.collect_map)
     
     def sort_most_critical_dumpsters(self, list):
         #ordenar e pegar as 5 primeiras
