@@ -3,6 +3,9 @@ from flask import request, jsonify
 from math import dist
 import requests
 app = Flask(__name__)
+BASE_URL1 = "25.2.231.195:5000"
+BASE_URL2 = "25.2.240.249:5000"
+BASE_URL3 = "25.3.139.238:5000"
 
 #Classe responsável por implementar o servidor
 class Server:
@@ -10,7 +13,6 @@ class Server:
         self.most_critical_dumpsters = {}
         self.section = None
         self.collect_map = []
-        #self.others_sectors = ["25.3.139.238:5000", "25.3.139.238:5050", "25.2.231.195:5050"]
     
     #Método para registrar um novo setor
     def register_section(self,section):
@@ -74,12 +76,22 @@ class Server:
     #montar a lista de lixeiras para coleta entre todos os setores
     #TODO
     def get_roadmap(self):
-        #consultar setor 1
-        #consultar setor 2
-        #consultar setor 3
-        # + lista do setor collect_map
-        # ordena e envia
-        return jsonify(self.collect_map)
+        setor2 = requests.get(f'{BASE_URL2}/get-roadmap')
+        setor3 = requests.get(f'{BASE_URL3}/get-roadmap')
+        all_sectors_map = self.collect_map + setor2.json() + setor3.json()
+        collect_map = self.sort_most_critical_dumpsters(all_sectors_map)
+        return jsonify(collect_map)
+    
+    def sort_most_critical_dumpsters(self, list):
+        #ordenar e pegar as 5 primeiras
+        for dumpster in self.most_critical_dumpsters.keys():
+            insert = self.most_critical_dumpsters[dumpster]
+            insert['id'] = dumpster
+            dumpstersList.append(insert)
+        dumpstersList = sorted(dumpstersList,reverse=True, key=lambda k : k['filled_percentage'])
+        for dumpster in dumpstersList:
+            collect_map.append(dumpster)
+            critical_dumpsters[dumpster["id"]] = dumpster
 
 server = Server()
 
@@ -114,4 +126,4 @@ def get_roadmap():
     return server.get_roadmap()
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host="25.2.231.195", port=5000)
