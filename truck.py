@@ -1,11 +1,10 @@
-from flask import Flask
-from flask import request,jsonify
+from flask import  jsonify
 from mqtt_client import MQTTClient
 import time
 import random
+import requests
 
-app = Flask(__name__)
-
+BASE_URL = "http://127.0.0.1:5000"
 #Classe que implementar o caminhão
 class Truck(MQTTClient):
 
@@ -14,32 +13,27 @@ class Truck(MQTTClient):
         self.map = []
 
     #Método para atualizar o mapa de coleta
-    def update_map(self, map):
+    def update_map(self):
         try:
-            self.map = map
-            print(self.map)
-            return jsonify({"msg": "Mapa de coleta atualizado"}),200
+            response = requests.get(f'{BASE_URL}/get-roadmap')
+            if response:
+                self.map = response.json()
+                print(self.map)
+            else:
+                time.sleep(random.randint(3))
         except Exception as e:
             return jsonify({"msg": e})
 
-    #Método coletar as lixeiras em n intervalos de tempo variados
-    #TODO rodar em paralelo à API num while true
-    def collect_trash(self, topic):
-        if self.collect_trash:
+    #Método coletar as lixeiras em n intervalos de tempo variados #TODO resolver problema de coleta entre tópicos
+    def collect_trash(self):
+        if len(self.map) >= 1:
             time.sleep(random.randint(3,8))
             dumpster = self.map.pop(0)     
-            self.publish_msg(dumpster, msg={"event": 'collect'})
-
-truck = Truck()
-
-@app.route("/", methods=['GET'])
-def health_check():
-	return 'Caminhão Funcionando'
-
-@app.route("/update-map",  methods=['POST'])
-def update_map():
-    print(request.json)
-    return truck.update_map(request.json)
-
+            self.publish_msg(topic=dumpster["id"], msg={"event": 'collect'}, host=dumpster["host"], port=dumpster['port'])
+        else:
+            self.update_map()
+            
 if __name__ == "__main__":
-	app.run(port=5050)
+    truck = Truck()
+    while True:
+        truck.collect_trash()

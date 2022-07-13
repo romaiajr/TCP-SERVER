@@ -1,7 +1,6 @@
 from flask import Flask
 from flask import request, jsonify
 from math import dist
-BASE_URL_TRUCK = "http://127.0.0.1:5050"
 import requests
 app = Flask(__name__)
 
@@ -9,14 +8,14 @@ app = Flask(__name__)
 class Server:
     def __init__(self):
         self.most_critical_dumpsters = {}
-        self.sections = {}
+        self.section = None
         self.collect_map = []
     
     #Método para registrar um novo setor
     def register_section(self,section):
         try:
-            self.sections[section['id']] = section
-            print(self.sections)
+            self.section = section['id']
+            print(self.section)
             return jsonify({"msg": "Registered"}),200
         except Exception as e:
             return jsonify({"msg": e})
@@ -24,19 +23,7 @@ class Server:
     #Método para retornar o melhor setor para uma lixeira de acordo com a distância euclidiana
     def register_dumpster(self, coordinate):
         try:
-            if self.sections:
-                best_section = None
-                lower_dist = 50000
-                for section in self.sections.values():
-                    coord_section = [int(section['lat']), int(section['long'])]
-                    coord_dumpster = [int(coordinate['lat']), int(coordinate['long'])]
-                    current_dist = dist(coord_section, coord_dumpster)
-                    if current_dist < lower_dist:
-                        best_section = section['id']
-                        lower_dist = current_dist
-                return jsonify({"id": best_section}), 200
-            else:
-                return jsonify({"msg": "Nenhum setor cadastrado"}), 400
+            return jsonify({"id": self.section}), 200
         except Exception as e:
             print(e)
             return jsonify({"msg": e})
@@ -63,7 +50,6 @@ class Server:
         try:
             self.most_critical_dumpsters[payload['id']] = payload
             self.sort_critical_dumpsters()
-            # self.build_collect_map()
             return jsonify({"msg": "Lixeira atualizada com sucesso"}), 200
         except Exception as e:
             return jsonify({"msg": e})
@@ -79,15 +65,14 @@ class Server:
             dumpstersList.append(insert)
         dumpstersList = sorted(dumpstersList,reverse=True, key=lambda k : k['filled_percentage'])
         for dumpster in dumpstersList:
-            collect_map.append(dumpster["id"])
+            collect_map.append(dumpster)
             critical_dumpsters[dumpster["id"]] = dumpster
         self.most_critical_dumpsters = critical_dumpsters
         self.collect_map = collect_map
 
-    #Método para enviar o mapa de coleta para o caminhão
-    def build_collect_map(self):
-        requests.post(f'{BASE_URL_TRUCK}/update-map', json=self.collect_map)
-        return
+    #TODO
+    def get_roadmap(self):
+        return jsonify(self.collect_map)
 
 server = Server()
 
@@ -115,6 +100,11 @@ def register_dumpster():
 @app.route("/register-section",  methods=['POST'])
 def register_section():
     return server.register_section(request.json)
+
+#TODO
+@app.route("/get-roadmap",  methods=['GET'])
+def get_roadmap():
+    return server.get_roadmap()
 
 if __name__ == "__main__":
     app.run()

@@ -1,7 +1,11 @@
 import uuid
 import paho.mqtt.client as mqtt
-import threading
 import json
+from decouple import config as env
+
+SERVER_URL = env('SERVER_URL')
+HOST = env('HOST')
+PORT = int(env('PORT'))
 
 #Classe responsável por implementar o MQTT
 class MQTTClient:
@@ -25,13 +29,13 @@ class MQTTClient:
         client = mqtt.Client(f'sub{self.id}')
         client.on_connect = self.on_connect
         client.on_message = self.on_message
-        client.connect("localhost", 1884, 60)
+        client.connect(HOST, PORT, 60)
         client.loop_forever()
 
-    def publish_msg(self, topic, msg):
+    def publish_msg(self, topic, msg, host=HOST, port=PORT):
         print(f"Sending msg: {msg} to topic: {topic}")
         client = mqtt.Client(f'pub{self.id}')
-        client.connect("localhost", 1884, 60)
+        client.connect(host, int(port), 60)
         client.publish(topic, str(json.dumps(msg)))
         client.loop_start()
 

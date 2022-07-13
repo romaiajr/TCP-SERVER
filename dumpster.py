@@ -2,8 +2,13 @@ import threading
 from mqtt_client import MQTTClient
 import requests
 import time
+import json
 from random import randint
-BASE_URL = "http://127.0.0.1:5000"
+from decouple import config as env
+
+SERVER_URL = env('SERVER_URL')
+HOST = env('HOST')
+PORT = int(env('PORT'))
 
 # Classe responsável por implementar a lixeira
 class Dumpster(MQTTClient):
@@ -20,7 +25,7 @@ class Dumpster(MQTTClient):
     #Método responsável por registrar a lixeira no setor
     def register(self):
         payload = {"long": self.long, "lat": self.lat}
-        response = requests.post(f'{BASE_URL}/register-dumpster', json=payload) #Rota para requisitar qual o setor mais próximo para conexão
+        response = requests.post(f'{SERVER_URL}/register-dumpster', json=payload) #Rota para requisitar qual o setor mais próximo para conexão
         if response.status_code == 200:
             self.section = response.json()['id']
             self.publish(event='register')
@@ -44,14 +49,13 @@ class Dumpster(MQTTClient):
                     self.lock()
             else:
                 self.lock()
-            self.publish(event='update', data={'filled_percentage': self.filled_percentage(), "is_locked": self.is_locked, "id": self.id}) 
-            
+            self.publish(event='update', data={'filled_percentage': self.filled_percentage(), "is_locked": self.is_locked, "id": self.id, "host": HOST, "port": PORT}) 
 
     #Método para coleta da lixeira   
     def empty(self):
         self.filled = 0
         self.unlock()
-        self.publish(event='update', data={'filled_percentage': self.filled_percentage(), "is_locked": self.is_locked})
+        self.publish(event='update', data={'filled_percentage': self.filled_percentage(), "is_locked": self.is_locked, "id": self.id, "host": HOST, "port": PORT})
 
     #Método para travar a lixeira    
     def lock(self):
@@ -67,15 +71,15 @@ class Dumpster(MQTTClient):
     
     #Método responsável por lidar com mensagens mqtt
     def on_message(self,client, userdata, msg):
-        print(msg)
-        if msg.payload['event'] == 'collect':
+        payload = json.loads(str(msg.payload.decode('utf-8')).replace("'",'"'))
+        if payload['event'] == 'collect':
             self.empty()
 
     #Método responsável por publicar mensagens mqtt
-    def publish(self, event, data={}):
+    def publish(self, event, data={"host":HOST, "port":PORT}):
         print(self.section)
         if self.section:
-            self.publish_msg(topic = self.section, msg={"id": self.id, "event": event, "data": data})
+            self.publish_msg(topic = self.section, msg={"id": self.id, "event": event, "data": data}, host=HOST, port=PORT)
 
 #TODO rodar o on_message na thread
 if __name__ == "__main__":
