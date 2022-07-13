@@ -10,6 +10,7 @@ class Server:
         self.most_critical_dumpsters = {}
         self.section = None
         self.collect_map = []
+        #self.others_sectors = ["25.3.139.238:5000", "25.3.139.238:5050", "25.2.231.195:5050"]
     
     #Método para registrar um novo setor
     def register_section(self,section):
@@ -54,7 +55,7 @@ class Server:
         except Exception as e:
             return jsonify({"msg": e})
 
-    #Método para ordenar as lixeiras da mais crítica à menos
+    #Método para ordenar as lixeiras da mais crítica do setor
     def sort_critical_dumpsters(self):
         collect_map = []
         dumpstersList = [] 
@@ -70,8 +71,14 @@ class Server:
         self.most_critical_dumpsters = critical_dumpsters
         self.collect_map = collect_map
 
+    #montar a lista de lixeiras para coleta entre todos os setores
     #TODO
     def get_roadmap(self):
+        #consultar setor 1
+        #consultar setor 2
+        #consultar setor 3
+        # + lista do setor collect_map
+        # ordena e envia
         return jsonify(self.collect_map)
 
 server = Server()
