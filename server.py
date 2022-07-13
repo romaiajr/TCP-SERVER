@@ -3,9 +3,9 @@ from flask import request, jsonify
 from math import dist
 import requests
 app = Flask(__name__)
-BASE_URL_ROBERTO = "25.2.231.195:5000"
-BASE_URL_DANIEL_ACER = "25.2.240.249:5000"
-BASE_URL_DANIEL_LENOVO = "25.3.139.238:5000"
+BASE_URL_ROBERTO = "http://25.2.231.195:5000"
+BASE_URL_DANIEL_LENOVO = "http://25.2.240.249:5000"
+BASE_URL_DANIEL_ACER = "http://25.3.139.238:5000"
 
 #Classe responsável por implementar o servidor
 class Server:
@@ -76,11 +76,14 @@ class Server:
     #montar a lista de lixeiras para coleta entre todos os setores
     #TODO
     def get_roadmap(self):
-        setor2 = requests.get(f'{BASE_URL_DANIEL_ACER}/get-roadmap')
-        setor3 = requests.get(f'{BASE_URL_DANIEL_LENOVO}/get-roadmap')
+        setor2 = requests.get(f'{BASE_URL_DANIEL_ACER}/get-collect-map')
+        setor3 = requests.get(f'{BASE_URL_DANIEL_LENOVO}/get-collect-map')
         all_sectors_map = self.collect_map + setor2.json() + setor3.json()
-        collect_map = self.sort_most_critical_dumpsters(all_sectors_map)
-        return jsonify(collect_map)
+        # collect_map = self.sort_most_critical_dumpsters(all_sectors_map)
+        return jsonify(all_sectors_map)
+
+    def get_collect_map(self):
+        return self.collect_map
     
     def sort_most_critical_dumpsters(self, list):
         #ordenar e pegar as 5 primeiras
@@ -124,6 +127,10 @@ def register_section():
 @app.route("/get-roadmap",  methods=['GET'])
 def get_roadmap():
     return server.get_roadmap()
+
+@app.route("/get-collect-map",  methods=['GET'])
+def get_collect_map():
+    return server.get_collect_map()
 
 if __name__ == "__main__":
     app.run(host="25.2.231.195", port=5000)

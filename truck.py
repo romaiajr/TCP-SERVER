@@ -3,8 +3,9 @@ from mqtt_client import MQTTClient
 import time
 import random
 import requests
+from decouple import config as env
 
-BASE_URL = "http://127.0.0.1:5000"
+SERVER_URL = env('SERVER_URL')
 #Classe que implementar o caminhão
 class Truck(MQTTClient):
 
@@ -15,7 +16,7 @@ class Truck(MQTTClient):
     #Método para atualizar o mapa de coleta
     def update_map(self):
         try:
-            response = requests.get(f'{BASE_URL}/get-roadmap')
+            response = requests.get(f'{SERVER_URL}/get-roadmap')
             if response:
                 self.map = response.json()
                 print(self.map)
