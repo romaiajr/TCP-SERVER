@@ -50,7 +50,7 @@ class Transhipment(MQTTClient):
     def update_dumpster(self, payload):
         self.dumpsters[payload['id']] = payload['data']
         print(self.dumpsters)
-        requests.post(f'{BASE_URL}/update-dumpster', json=self.dumpsters[payload['id']])
+        requests.post(f'{SERVER_URL}/update-dumpster', json=self.dumpsters[payload['id']])
 
 if __name__ == "__main__":
     section = Section(randint(0,50),randint(0,50))

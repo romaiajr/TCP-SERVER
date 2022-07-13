@@ -3,6 +3,9 @@ from flask import request, jsonify
 from math import dist
 import requests
 app = Flask(__name__)
+BASE_URL_ROBERTO = "http://25.2.231.195:5000"
+BASE_URL_DANIEL_LENOVO = "http://25.2.240.249:5000"
+BASE_URL_DANIEL_ACER = "http://25.3.139.238:5000"
 
 #Classe responsável por implementar o servidor
 class Server:
@@ -10,7 +13,6 @@ class Server:
         self.most_critical_dumpsters = {}
         self.section = None
         self.collect_map = []
-        #self.others_sectors = ["25.3.139.238:5000", "25.3.139.238:5050", "25.2.231.195:5050"]
     
     #Método para registrar um novo setor
     def register_section(self,section):
@@ -66,20 +68,34 @@ class Server:
             dumpstersList.append(insert)
         dumpstersList = sorted(dumpstersList,reverse=True, key=lambda k : k['filled_percentage'])
         for dumpster in dumpstersList:
-            collect_map.append(dumpster)
-            critical_dumpsters[dumpster["id"]] = dumpster
+            if dumpster['filled_percentage'] >= 40 or dumpster['is_locked']:
+                collect_map.append(dumpster)
+                critical_dumpsters[dumpster["id"]] = dumpster
         self.most_critical_dumpsters = critical_dumpsters
         self.collect_map = collect_map
 
     #montar a lista de lixeiras para coleta entre todos os setores
     #TODO
     def get_roadmap(self):
-        #consultar setor 1
-        #consultar setor 2
-        #consultar setor 3
-        # + lista do setor collect_map
-        # ordena e envia
+        setor2 = requests.get(f'{BASE_URL_DANIEL_ACER}/get-collect-map')
+        setor3 = requests.get(f'{BASE_URL_DANIEL_LENOVO}/get-collect-map')
+        all_sectors_map = self.collect_map + setor2.json() + setor3.json()
+        # collect_map = self.sort_most_critical_dumpsters(all_sectors_map)
+        return jsonify(all_sectors_map)
+
+    def get_collect_map(self):
         return jsonify(self.collect_map)
+    
+    def sort_most_critical_dumpsters(self, list):
+        #ordenar e pegar as 5 primeiras
+        for dumpster in self.most_critical_dumpsters.keys():
+            insert = self.most_critical_dumpsters[dumpster]
+            insert['id'] = dumpster
+            dumpstersList.append(insert)
+        dumpstersList = sorted(dumpstersList,reverse=True, key=lambda k : k['filled_percentage'])
+        for dumpster in dumpstersList:
+            collect_map.append(dumpster)
+            critical_dumpsters[dumpster["id"]] = dumpster
 
 server = Server()
 
@@ -113,5 +129,9 @@ def register_section():
 def get_roadmap():
     return server.get_roadmap()
 
+@app.route("/get-collect-map",  methods=['GET'])
+def get_collect_map():
+    return server.get_collect_map()
+
 if __name__ == "__main__":
-    app.run()
+    app.run(host="25.2.231.195", port=5000)
