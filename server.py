@@ -68,8 +68,9 @@ class Server:
             dumpstersList.append(insert)
         dumpstersList = sorted(dumpstersList,reverse=True, key=lambda k : k['filled_percentage'])
         for dumpster in dumpstersList:
-            collect_map.append(dumpster)
-            critical_dumpsters[dumpster["id"]] = dumpster
+            if dumpster['filled_percentage'] >= 40 or dumpster['is_locked']:
+                collect_map.append(dumpster)
+                critical_dumpsters[dumpster["id"]] = dumpster
         self.most_critical_dumpsters = critical_dumpsters
         self.collect_map = collect_map
 

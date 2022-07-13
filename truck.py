@@ -21,7 +21,7 @@ class Truck(MQTTClient):
                 self.map = response.json()
                 print(self.map)
             else:
-                time.sleep(random.randint(3))
+                time.sleep(3)
         except Exception as e:
             return jsonify({"msg": e})
 
