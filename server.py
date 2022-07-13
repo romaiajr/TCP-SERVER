@@ -4,8 +4,8 @@ from math import dist
 import requests
 app = Flask(__name__)
 BASE_URL_ROBERTO = "25.2.231.195:5000"
-BASE_URL_DANIEL_ACER = "25.2.240.249:5000"
-BASE_URL_DANIEL_LENOVO = "25.3.139.238:5000"
+BASE_URL_DANIEL_LENOVO = "25.2.240.249:5000"
+BASE_URL_DANIEL_ACER = "25.3.139.238:5000"
 
 #Classe responsável por implementar o servidor
 class Server:
